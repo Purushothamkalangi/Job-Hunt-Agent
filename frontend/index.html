@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Hunt Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #7c6af7;
+    --accent2: #4ecdc4;
+    --accent3: #ff6b6b;
+    --text: #e8e8f0;
+    --muted: #666680;
+    --success: #4ecdc4;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-head);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,106,247,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,106,247,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(124,106,247,0.12);
+    border: 1px solid rgba(124,106,247,0.3);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .header-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  h1 {
+    font-size: clamp(40px, 6vw, 68px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+  }
+
+  .header-sub {
+    font-size: 16px;
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  /* Form card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(124,106,247,0.4), transparent);
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Form grid */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .form-grid.cols-1 { grid-template-columns: 1fr; }
+  .span-2 { grid-column: span 2; }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  label {
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  input[type="password"],
+  textarea,
+  select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: var(--font-head);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(124,106,247,0.12);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.5;
+  }
+
+  select option { background: var(--surface2); }
+
+  /* Workout day pills */
+  .day-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .day-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    color: var(--muted);
+  }
+
+  .day-pill.active {
+    background: rgba(124,106,247,0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Launch button */
+  .launch-btn {
+    width: 100%;
+    padding: 18px 32px;
+    background: var(--accent);
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-family: var(--font-head);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .launch-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+  }
+
+  .launch-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(124,106,247,0.4); }
+  .launch-btn:active { transform: translateY(0); }
+  .launch-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* Progress panel */
+  .progress-panel {
+    display: none;
+  }
+
+  .progress-panel.visible { display: block; }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 13px;
+  }
+
+  .progress-label { color: var(--muted); }
+  .progress-pct { font-family: var(--font-mono); color: var(--accent); font-size: 13px; }
+
+  .progress-bar-track {
+    background: var(--surface2);
+    border-radius: 100px;
+    height: 4px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 100px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .log-area {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+    line-height: 1.8;
+  }
+
+  .log-line { color: var(--muted); }
+  .log-line.info { color: var(--text); }
+  .log-line.success { color: var(--success); }
+  .log-line.error { color: var(--accent3); }
+
+  /* Done state */
+  .done-panel {
+    display: none;
+    text-align: center;
+    padding: 20px 0;
+  }
+
+  .done-panel.visible { display: block; }
+
+  .done-icon {
+    font-size: 56px;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .done-title {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .done-sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  /* Phase pills */
+  .phases-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+
+  .phase-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-family: var(--font-mono);
+  }
+
+  .reset-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 28px;
+    color: var(--muted);
+    font-family: var(--font-head);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Hint text */
+  .hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-family: var(--font-mono);
+  }
+
+  /* Counter row */
+  .counter-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .counter-num {
+    font-size: 24px;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    color: var(--accent);
+  }
+
+  .counter-label { font-size: 13px; color: var(--muted); }
+
+  .mini-progress {
+    flex: 1;
+    background: var(--surface2);
+    border-radius: 100px;
+    height: 3px;
+    overflow: hidden;
+  }
+
+  .mini-fill {
+    height: 100%;
+    background: var(--accent2);
+    border-radius: 100px;
+    transition: width 0.3s;
+  }
+
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid.cols-3 { grid-template-columns: 1fr 1fr; }
+    .span-2 { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-badge">Autonomous Agent</div>
+    <h1>Job Hunt<br>Agent</h1>
+    <p class="header-sub">Enter any role. Set your timeline. Get a full roadmap in Google Calendar.</p>
+  </div>
+
+  <!-- Form -->
+  <div id="formSection">
+
+    <!-- Role + Timeline -->
+    <div class="card">
+      <div class="card-title">Target Role</div>
+      <div class="form-grid">
+        <div class="field span-2">
+          <label>Job Role</label>
+          <input type="text" id="role" placeholder="e.g. AI Engineer, Frontend Developer, Data Scientist" />
+        </div>
+        <div class="field">
+          <label>Total Days</label>
+          <input type="number" id="days" value="121" min="14" max="365" />
+        </div>
+        <div class="field">
+          <label>Start Date</label>
+          <input type="date" id="startDate" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Background -->
+    <div class="card">
+      <div class="card-title">Your Background</div>
+      <div class="form-grid cols-1">
+        <div class="field">
+          <label>Background + Skills + Goal</label>
+          <textarea id="background" placeholder="e.g. MS Computer Science, Python basics, QA automation background. Goal: AI Engineer role at a US company that sponsors OPT. Interested in LLMs, RAG, and agent systems."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schedule -->
+    <div class="card">
+      <div class="card-title">Daily Schedule</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Wake Up Time</label>
+          <input type="time" id="wakeTime" value="07:00" />
+        </div>
+        <div class="field">
+          <label>Work Start Time</label>
+          <input type="time" id="workStart" value="08:00" />
+        </div>
+        <div class="field">
+          <label>Work Hours / Day</label>
+          <input type="number" id="workHours" value="4" min="2" max="8" />
+        </div>
+        <div class="field">
+          <label>Saturday</label>
+          <input type="text" value="Full Rest — Skipped" disabled style="opacity:0.4" />
+        </div>
+        <div class="field span-2">
+          <label>Workout Days</label>
+          <div class="day-pills" id="workoutDays">
+            <div class="day-pill active" data-day="Monday">Mon</div>
+            <div class="day-pill active" data-day="Tuesday">Tue</div>
+            <div class="day-pill" data-day="Wednesday">Wed</div>
+            <div class="day-pill active" data-day="Thursday">Thu</div>
+            <div class="day-pill active" data-day="Friday">Fri</div>
+            <div class="day-pill" data-day="Sunday">Sun</div>
+          </div>
+          <span class="hint">Click to toggle workout days. Workout appears at Wake Up Time, AI block starts at Work Start Time.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- API Keys -->
+    <div class="card">
+      <div class="card-title">Configuration</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Anthropic API Key</label>
+          <input type="password" id="apiKey" placeholder="sk-ant-..." />
+          <span class="hint">Get from console.anthropic.com</span>
+        </div>
+        <div class="field">
+          <label>Google Credentials Path</label>
+          <input type="text" id="credPath" placeholder="/path/to/credentials.json" />
+          <span class="hint">OAuth2 credentials from Google Cloud Console</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="launch-btn" id="launchBtn" onclick="launch()">
+      🚀 Generate Roadmap + Schedule Calendar
+    </button>
+
+  </div>
+
+  <!-- Progress -->
+  <div class="card progress-panel" id="progressPanel">
+    <div class="card-title">Agent Running</div>
+
+    <div class="counter-row">
+      <span class="counter-num" id="createdCount">0</span>
+      <span class="counter-label">days scheduled</span>
+      <div class="mini-progress">
+        <div class="mini-fill" id="miniBar" style="width:0%"></div>
+      </div>
+      <span style="font-family:var(--font-mono);font-size:12px;color:var(--muted)" id="totalLabel">/ 0</span>
+    </div>
+
+    <div class="progress-header">
+      <span class="progress-label" id="progressLabel">Initializing...</span>
+      <span class="progress-pct" id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+    <div class="log-area" id="logArea"></div>
+  </div>
+
+  <!-- Done -->
+  <div class="card done-panel" id="donePanel">
+    <span class="done-icon">🎯</span>
+    <div class="done-title" id="doneTitle">Roadmap Complete!</div>
+    <div class="done-sub" id="doneSub">Your Google Calendar is ready.</div>
+    <div class="phases-grid" id="phasesGrid"></div>
+    <button class="reset-btn" onclick="reset()">Schedule Another Roadmap</button>
+  </div>
+
+</div>
+
+<script>
+  // Set default start date to today
+  document.getElementById('startDate').value = new Date().toISOString().split('T')[0];
+
+  // Toggle workout days
+  document.querySelectorAll('.day-pill').forEach(pill => {
+    pill.addEventListener('click', () => pill.classList.toggle('active'));
+  });
+
+  function getWorkoutDays() {
+    return [...document.querySelectorAll('.day-pill.active')].map(p => p.dataset.day);
+  }
+
+  function addLog(msg, type = 'info') {
+    const area = document.getElementById('logArea');
+    const line = document.createElement('div');
+    line.className = `log-line ${type}`;
+    line.textContent = `${new Date().toLocaleTimeString()} — ${msg}`;
+    area.appendChild(line);
+    area.scrollTop = area.scrollHeight;
+  }
+
+  function setProgress(pct, label) {
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressPct').textContent = pct + '%';
+    document.getElementById('progressLabel').textContent = label;
+  }
+
+  function setCounter(created, total) {
+    document.getElementById('createdCount').textContent = created;
+    document.getElementById('totalLabel').textContent = `/ ${total}`;
+    document.getElementById('miniBar').style.width = (total ? Math.round(created/total*100) : 0) + '%';
+  }
+
+  async function launch() {
+    const role = document.getElementById('role').value.trim();
+    const days = parseInt(document.getElementById('days').value);
+    const startDate = document.getElementById('startDate').value;
+    const background = document.getElementById('background').value.trim();
+    const wakeTime = document.getElementById('wakeTime').value;
+    const workStart = document.getElementById('workStart').value;
+    const workHours = parseInt(document.getElementById('workHours').value);
+    const apiKey = document.getElementById('apiKey').value.trim();
+    const credPath = document.getElementById('credPath').value.trim();
+    const workoutDays = getWorkoutDays();
+
+    if (!role || !startDate || !background || !apiKey || !credPath) {
+      alert('Please fill in all fields.');
+      return;
+    }
+
+    document.getElementById('launchBtn').disabled = true;
+    document.getElementById('formSection').style.display = 'none';
+    document.getElementById('progressPanel').classList.add('visible');
+    setProgress(2, 'Starting agent...');
+    setCounter(0, days);
+
+    try {
+      const resp = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role, days, start_date: startDate, background,
+          workout_days: workoutDays, wake_time: wakeTime,
+          work_start: workStart, work_hours: workHours,
+          anthropic_api_key: apiKey,
+          google_credentials_path: credPath,
+        }),
+      });
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const data = JSON.parse(line.slice(6));
+
+          if (data.type === 'log') {
+            addLog(data.message);
+            setProgress(data.percent, data.message);
+          } else if (data.type === 'progress') {
+            addLog(data.message, 'info');
+            setProgress(data.percent, data.message);
+            setCounter(data.created, data.total);
+          } else if (data.type === 'error') {
+            addLog(data.message, 'error');
+            setProgress(data.percent, '❌ Error occurred');
+          } else if (data.type === 'done') {
+            setProgress(100, data.message);
+            setCounter(data.created, data.total);
+            addLog(data.message, 'success');
+            setTimeout(() => showDone(data), 800);
+          }
+        }
+      }
+    } catch (err) {
+      addLog('Connection error: ' + err.message, 'error');
+    }
+  }
+
+  function showDone(data) {
+    document.getElementById('progressPanel').classList.remove('visible');
+    document.getElementById('donePanel').classList.add('visible');
+    document.getElementById('doneTitle').textContent = `${data.created} Days Scheduled! 🎯`;
+    document.getElementById('doneSub').textContent =
+      `Open Google Calendar — your ${document.getElementById('role')?.value || 'Job Hunt'} roadmap is live.`;
+
+    const grid = document.getElementById('phasesGrid');
+    grid.innerHTML = '';
+    (data.phases || []).forEach(p => {
+      const chip = document.createElement('div');
+      chip.className = 'phase-chip';
+      chip.textContent = `${p.phase} (Days ${p.start_day}–${p.end_day})`;
+      grid.appendChild(chip);
+    });
+  }
+
+  function reset() {
+    document.getElementById('donePanel').classList.remove('visible');
+    document.getElementById('progressPanel').classList.remove('visible');
+    document.getElementById('formSection').style.display = 'block';
+    document.getElementById('launchBtn').disabled = false;
+    document.getElementById('logArea').innerHTML = '';
+    setProgress(0, '');
+    setCounter(0, 0);
+  }
+</script>
+</body>
+</html>
