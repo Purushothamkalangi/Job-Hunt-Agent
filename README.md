@@ -110,7 +110,6 @@ job-hunt-agent/
 
 **Change the model**: In `agent.py`, edit `model="claude-sonnet-4-20250514"`
 
-**Change time zone**: In `agent.py`, search for `America/New_York` and replace
 
 **Add more networking resources**: Edit the prompts in `RoadmapGenerator.generate_day_batch()`
 
